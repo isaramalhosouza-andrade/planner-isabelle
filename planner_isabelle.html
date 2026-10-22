@@ -3,390 +3,403 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Planner - Engenharia & CS</title>
-    <!-- TailwindCSS para um design minimalista -->
+    <title>Planner Semanal - Isa</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js para o gráfico de humor -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f4f4f5; color: #18181b; }
-        .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
-        input, select, textarea, button { outline: none; transition: all 0.2s; }
-        input:focus, select:focus, textarea:focus { border-color: #000; box-shadow: 0 0 0 1px #000; }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; color: #1f2937; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.025); border: 1px solid #f3f4f6; }
+        .day-card { background: white; border-radius: 8px; border: 1px solid #e5e7eb; padding: 16px; margin-bottom: 12px; }
+        .tag-fae { background-color: #f3e8ff; color: #9333ea; }
+        .tag-pessoal { background-color: #dcfce7; color: #16a34a; }
+        .tag-faculdade { background-color: #dbeafe; color: #2563eb; }
+        #taskModal, #examModal { background-color: rgba(0,0,0,0.4); }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 max-w-[1400px] mx-auto">
 
-    <div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- Cabeçalho -->
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold tracking-tight">Meu Planner</h1>
-                <p class="text-gray-500 mt-1">Organização para Engenharia e Faé Mídias Digitais</p>
+        <!-- COLUNA ESQUERDA: Checklist Semanal -->
+        <div class="lg:col-span-2">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold">Checklist Semanal</h1>
+                <button onclick="openModal('taskModal')" class="bg-[#111827] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition">+ Nova Tarefa</button>
             </div>
-            <div class="text-sm text-gray-400 bg-white px-4 py-2 rounded-full shadow-sm">
-                Status: <span id="syncStatus" class="text-green-500 font-semibold">Sincronizado</span>
-            </div>
-        </header>
+            <div id="weeklyChecklist"></div>
+        </div>
 
-        <!-- Grid Principal -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- COLUNA DIREITA: Widgets -->
+        <div class="space-y-6">
             
-            <!-- Coluna 1 -->
-            <div class="flex flex-col gap-6">
-                
-                <!-- Tarefas do Dia -->
-                <div class="card flex-1">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <span>📝</span> Tarefas do Dia
-                    </h2>
-                    
-                    <div class="flex flex-col sm:flex-row gap-2 mb-6">
-                        <input type="text" id="taskText" placeholder="O que você precisa fazer?" class="flex-1 p-3 border border-gray-200 rounded-lg bg-gray-50">
-                        <div class="flex gap-2">
-                            <input type="time" id="taskTime" class="p-3 border border-gray-200 rounded-lg bg-gray-50 cursor-pointer" title="Horário da tarefa">
-                            <button onclick="addTask()" class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 font-semibold shadow-sm">Adicionar</button>
-                        </div>
-                    </div>
-                    
-                    <ul id="taskList" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-                        <!-- Tarefas serão inseridas aqui -->
-                    </ul>
+            <!-- Tracker de Humor -->
+            <div class="card p-6">
+                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-700">
+                    <span class="text-xl">☺️</span> Tracker de Humor
+                </h2>
+                <p class="text-sm text-gray-500 mb-4">Como você está se sentindo hoje?</p>
+                <div class="flex justify-between mb-8 px-2">
+                    <button onclick="addMood(1)" class="text-3xl hover:scale-110 transition grayscale hover:grayscale-0 focus:grayscale-0">😫</button>
+                    <button onclick="addMood(2)" class="text-3xl hover:scale-110 transition grayscale hover:grayscale-0 focus:grayscale-0">😢</button>
+                    <button onclick="addMood(3)" class="text-3xl hover:scale-110 transition grayscale hover:grayscale-0 focus:grayscale-0">😐</button>
+                    <button onclick="addMood(4)" class="text-3xl hover:scale-110 transition grayscale hover:grayscale-0 focus:grayscale-0">🙂</button>
+                    <button onclick="addMood(5)" class="text-3xl hover:scale-110 transition grayscale hover:grayscale-0 focus:grayscale-0">🤩</button>
                 </div>
-
-                <!-- Provas e Simulados -->
-                <div class="card">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <span>📚</span> Provas e Simulados
-                    </h2>
-                    <div class="flex gap-2 mb-4">
-                        <input type="text" id="examText" placeholder="Ex: Prova de Cálculo" class="flex-1 p-3 border border-gray-200 rounded-lg bg-gray-50">
-                        <input type="date" id="examDate" class="p-3 border border-gray-200 rounded-lg bg-gray-50">
-                        <button onclick="addExam()" class="bg-black text-white px-4 rounded-lg hover:bg-gray-800 font-bold">+</button>
-                    </div>
-                    <ul id="examList" class="space-y-2 max-h-[200px] overflow-y-auto"></ul>
+                <div class="relative h-40 w-full">
+                    <canvas id="moodChart"></canvas>
                 </div>
-
             </div>
 
-            <!-- Coluna 2 -->
-            <div class="flex flex-col gap-6">
-                
-                <!-- Ciclo Menstrual -->
-                <div class="card">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <span>🌸</span> Ciclo Menstrual
+            <!-- Ciclo Menstrual -->
+            <div class="card p-6">
+                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-700">
+                    <span class="text-red-400 text-xl">💧</span> Ciclo Menstrual
+                </h2>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">Última Menstruação</label>
+                        <input type="date" id="lastPeriodDate" onchange="calculateCycle()" class="w-full p-2 border border-gray-200 rounded text-sm bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">Duração (dias)</label>
+                        <input type="number" id="cycleLength" value="28" onchange="calculateCycle()" class="w-full p-2 border border-gray-200 rounded text-sm bg-gray-50">
+                    </div>
+                </div>
+                <div class="bg-gray-50 border border-gray-100 p-3 rounded-lg flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-gray-400">Fase Atual</p>
+                        <p id="cyclePhaseDisplay" class="font-medium text-gray-800">Insira as datas acima</p>
+                    </div>
+                    <span class="text-blue-400 text-xl">📅</span>
+                </div>
+            </div>
+
+            <!-- Provas e Simulados -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold flex items-center gap-2 text-gray-700">
+                        <span class="text-xl">🎓</span> Provas e Simulados
                     </h2>
-                    <select id="cyclePhase" onchange="saveCycle()" class="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 cursor-pointer">
-                        <option value="Menstruação">🩸 Menstruação</option>
-                        <option value="Fase Folicular">🌱 Fase Folicular</option>
-                        <option value="Ovulação">✨ Ovulação</option>
-                        <option value="Fase Lútea">🌙 Fase Lútea</option>
+                    <button onclick="openModal('examModal')" class="bg-gray-100 text-gray-600 px-3 py-1 rounded text-xs font-medium hover:bg-gray-200">+ Adicionar</button>
+                </div>
+                <div id="examList" class="space-y-3 max-h-[300px] overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Nova Tarefa -->
+    <div id="taskModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold mb-4">Nova Tarefa</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Dia da Semana</label>
+                    <select id="taskDay" class="w-full p-2 border border-gray-300 rounded-md outline-none focus:border-black">
+                        <option value="Segunda-feira">Segunda-feira</option>
+                        <option value="Terça-feira">Terça-feira</option>
+                        <option value="Quarta-feira">Quarta-feira</option>
+                        <option value="Quinta-feira">Quinta-feira</option>
+                        <option value="Sexta-feira">Sexta-feira</option>
+                        <option value="Sábado">Sábado</option>
+                        <option value="Domingo">Domingo</option>
                     </select>
                 </div>
-
-                <!-- Gratidão da Semana -->
-                <div class="card">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <span>🙏</span> Gratidão da Semana
-                    </h2>
-                    <textarea id="gratitudeText" onblur="saveGratitude()" placeholder="Pelo que você é grata esta semana?" class="w-full p-4 border border-gray-200 rounded-lg h-32 resize-none bg-gray-50"></textarea>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tarefa</label>
+                    <input type="text" id="taskText" placeholder="Ex: Alinhamento Semanal" class="w-full p-2 border border-gray-300 rounded-md outline-none focus:border-black">
                 </div>
-
-                <!-- Humor e Gráfico -->
-                <div class="card">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <span>🎭</span> Monitoramento de Humor
-                    </h2>
-                    <div class="flex gap-2 mb-6">
-                        <select id="moodSelect" class="flex-1 p-3 border border-gray-200 rounded-lg bg-gray-50 cursor-pointer">
-                            <option value="5">Excelente 😄</option>
-                            <option value="4">Bom 🙂</option>
-                            <option value="3">Normal 😐</option>
-                            <option value="2">Triste 😔</option>
-                            <option value="1">Estressada 😠</option>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Categoria / Tag</label>
+                        <select id="taskTag" class="w-full p-2 border border-gray-300 rounded-md outline-none focus:border-black">
+                            <option value="Faé Mídias (CS)">Faé Mídias (CS)</option>
+                            <option value="Faculdade">Faculdade</option>
+                            <option value="Pessoal">Pessoal</option>
                         </select>
-                        <button onclick="addMood()" class="bg-black text-white px-6 rounded-lg hover:bg-gray-800 font-semibold shadow-sm">Registrar Hoje</button>
                     </div>
-                    <div class="relative h-48 w-full">
-                        <canvas id="moodChart"></canvas>
+                    <div class="w-32">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Horário</label>
+                        <input type="time" id="taskTime" class="w-full p-2 border border-gray-300 rounded-md outline-none focus:border-black" title="Opcional">
                     </div>
                 </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeModal('taskModal')" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-md">Cancelar</button>
+                <button onclick="addTask()" class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">Salvar</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- MODAL: Nova Prova -->
+    <div id="examModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold mb-4">Adicionar Prova/Simulado</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                    <input type="date" id="newExamDate" class="w-full p-2 border border-gray-300 rounded-md outline-none focus:border-black">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                    <input type="text" id="newExamText" placeholder="Ex: AV Segurança da Informação" class="w-full p-2 border border-gray-300 rounded-md outline-none focus:border-black">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeModal('examModal')" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-md">Cancelar</button>
+                <button onclick="addExam()" class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">Adicionar</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- GERENCIAMENTO DE DADOS (LOCALSTORAGE / CLOUD FALLBACK) ---
-        // Utilizando LocalStorage para funcionar perfeitamente e instantaneamente no Netlify.
+        const DAYS_OF_WEEK = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
         
-        let tasks = JSON.parse(localStorage.getItem('isa_tasks')) || [];
-        let exams = JSON.parse(localStorage.getItem('isa_exams')) || [];
-        let moods = JSON.parse(localStorage.getItem('isa_moods')) || [];
+        let tasks = JSON.parse(localStorage.getItem('isa_v2_tasks')) || [];
+        let exams = JSON.parse(localStorage.getItem('isa_v2_exams')) || [];
+        let moods = JSON.parse(localStorage.getItem('isa_v2_moods')) || [];
 
-        function saveToCloud(key, data) {
-            localStorage.setItem(key, JSON.stringify(data));
-            showSyncStatus();
-        }
-
-        function showSyncStatus() {
-            const status = document.getElementById('syncStatus');
-            status.textContent = "Salvando...";
-            status.classList.replace('text-green-500', 'text-gray-400');
-            setTimeout(() => {
-                status.textContent = "Sincronizado";
-                status.classList.replace('text-gray-400', 'text-green-500');
-            }, 500);
-        }
-
-        // --- INICIALIZAÇÃO ---
         window.onload = () => {
-            renderTasks();
+            renderWeeklyTasks();
             renderExams();
             renderMoods();
             
-            // Carrega Ciclo e Gratidão
-            document.getElementById('cyclePhase').value = localStorage.getItem('isa_cycle') || 'Menstruação';
-            document.getElementById('gratitudeText').value = localStorage.getItem('isa_gratitude') || '';
+            document.getElementById('lastPeriodDate').value = localStorage.getItem('isa_v2_lastPeriod') || '';
+            document.getElementById('cycleLength').value = localStorage.getItem('isa_v2_cycleLength') || '28';
+            calculateCycle();
 
-            // Pede permissão para notificações
             if ("Notification" in window && Notification.permission !== "granted") {
                 Notification.requestPermission();
             }
         };
 
-        // --- TAREFAS ---
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // --- CHECKLIST E NOTIFICAÇÕES ---
         function addTask() {
+            const day = document.getElementById('taskDay').value;
             const text = document.getElementById('taskText').value.trim();
+            const tag = document.getElementById('taskTag').value;
             const time = document.getElementById('taskTime').value;
             
-            if(!text) return alert("Digite uma tarefa!");
+            if(!text) return alert("Digite o nome da tarefa!");
             
-            tasks.push({
-                id: Date.now(),
-                text: text,
-                time: time,
-                completed: false,
-                notified: false
-            });
-            
-            saveToCloud('isa_tasks', tasks);
-            renderTasks();
+            tasks.push({ id: Date.now(), day, text, tag, time, completed: false, notified: false });
+            localStorage.setItem('isa_v2_tasks', JSON.stringify(tasks));
             
             document.getElementById('taskText').value = '';
             document.getElementById('taskTime').value = '';
+            closeModal('taskModal');
+            renderWeeklyTasks();
         }
 
         function toggleTask(id) {
             const task = tasks.find(t => t.id === id);
-            if(task) {
-                task.completed = !task.completed;
-                saveToCloud('isa_tasks', tasks);
-                renderTasks();
+            if(task) { 
+                task.completed = !task.completed; 
+                localStorage.setItem('isa_v2_tasks', JSON.stringify(tasks)); 
+                renderWeeklyTasks(); 
             }
         }
 
         function deleteTask(id) {
             tasks = tasks.filter(t => t.id !== id);
-            saveToCloud('isa_tasks', tasks);
-            renderTasks();
+            localStorage.setItem('isa_v2_tasks', JSON.stringify(tasks));
+            renderWeeklyTasks();
         }
 
-        function renderTasks() {
-            const list = document.getElementById('taskList');
-            list.innerHTML = '';
-            
-            if(tasks.length === 0) {
-                list.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-4">Nenhuma tarefa pendente.</p>';
-                return;
-            }
+        function getTagClass(tag) {
+            if(tag.includes('Faé')) return 'tag-fae';
+            if(tag === 'Pessoal') return 'tag-pessoal';
+            return 'tag-faculdade';
+        }
 
-            tasks.forEach(t => {
-                list.innerHTML += `
-                    <li class="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors ${t.completed ? 'opacity-50 bg-gray-50' : 'bg-white'}">
-                        <div class="flex items-center gap-3 overflow-hidden">
-                            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-5 h-5 text-black rounded border-gray-300 cursor-pointer">
-                            <span class="truncate ${t.completed ? 'line-through text-gray-500' : 'font-medium'}">${t.text}</span>
-                            ${t.time ? `<span class="text-xs bg-black text-white px-2 py-1 rounded-full whitespace-nowrap">⏰ ${t.time}</span>` : ''}
-                        </div>
-                        <button onclick="deleteTask(${t.id})" class="text-gray-400 hover:text-red-500 px-2 transition-colors">✕</button>
-                    </li>
+        function renderWeeklyTasks() {
+            const container = document.getElementById('weeklyChecklist');
+            container.innerHTML = '';
+
+            DAYS_OF_WEEK.forEach(day => {
+                const dayTasks = tasks.filter(t => t.day === day);
+                let tasksHTML = '';
+
+                if (dayTasks.length === 0) {
+                    tasksHTML = `<p class="text-sm text-gray-400 italic">Nenhuma tarefa para este dia.</p>`;
+                } else {
+                    tasksHTML = `<ul class="space-y-3">`;
+                    dayTasks.forEach(t => {
+                        const tagStyle = getTagClass(t.tag);
+                        tasksHTML += `
+                            <li class="flex items-center justify-between group">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer">
+                                    <span class="text-sm ${t.completed ? 'line-through text-gray-400' : 'text-gray-700'}">${t.text}</span>
+                                    ${t.time ? `<span class="text-[10px] font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">⏰ ${t.time}</span>` : ''}
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] px-2 py-1 rounded-full font-medium ${tagStyle}">${t.tag}</span>
+                                    <button onclick="deleteTask(${t.id})" class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">✕</button>
+                                </div>
+                            </li>
+                        `;
+                    });
+                    tasksHTML += `</ul>`;
+                }
+
+                container.innerHTML += `
+                    <div class="day-card">
+                        <h3 class="font-medium text-gray-800 mb-3">${day}</h3>
+                        ${tasksHTML}
+                    </div>
                 `;
             });
         }
 
-        // --- NOTIFICAÇÕES 10 MINUTOS ANTES ---
-        setInterval(checkUpcomingTasks, 60000); // Roda a cada 60 segundos
-
-        function checkUpcomingTasks() {
+        // Lógica da notificação a cada 60 segundos
+        setInterval(() => {
             if (Notification.permission !== "granted") return;
-
+            
             const now = new Date();
-            const currentTotalMinutes = (now.getHours() * 60) + now.getMinutes();
+            const currentTotalMins = (now.getHours() * 60) + now.getMinutes();
+            // Pega o dia da semana atual (0 = Domingo, 1 = Segunda, etc.)
+            // Converte para combinar com nosso array DAYS_OF_WEEK onde índice 0 é Segunda
+            const currentDayStr = DAYS_OF_WEEK[(now.getDay() + 6) % 7];
+            
             let updated = false;
-
+            
             tasks.forEach(task => {
-                if (!task.completed && task.time && !task.notified) {
-                    const [taskHour, taskMinute] = task.time.split(':').map(Number);
-                    const taskTotalMinutes = (taskHour * 60) + taskMinute;
+                // Só avisa se a tarefa não foi concluída, tem horário, não foi notificada e é de HOJE
+                if (!task.completed && task.time && !task.notified && task.day === currentDayStr) {
+                    const [h, m] = task.time.split(':').map(Number);
+                    const diff = (h * 60 + m) - currentTotalMins;
                     
-                    const timeDifference = taskTotalMinutes - currentTotalMinutes;
-
-                    // Se faltar 10 minutos (ou entre 0 e 10 min, caso tenha pulado)
-                    if (timeDifference > 0 && timeDifference <= 10) {
-                        new Notification("Lembrete do Planner!", {
-                            body: `A tarefa "${task.text}" começa em ${timeDifference} minutos! Prepare-se.`
-                        });
-                        task.notified = true;
+                    if (diff > 0 && diff <= 10) {
+                        new Notification("Planner da Isa", { body: `Sua tarefa "${task.text}" começa em ${diff} minutos!` });
+                        task.notified = true; 
                         updated = true;
                     }
                 }
             });
+            
+            if (updated) localStorage.setItem('isa_v2_tasks', JSON.stringify(tasks));
+        }, 60000);
 
-            if (updated) {
-                saveToCloud('isa_tasks', tasks); // Salva que já foi notificado
-            }
+        // --- TRACKER DE HUMOR ---
+        let moodChartInstance = null;
+        function addMood(value) {
+            const date = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            const idx = moods.findIndex(m => m.date === date);
+            if(idx !== -1) moods[idx].value = value; else moods.push({ date, value });
+            localStorage.setItem('isa_v2_moods', JSON.stringify(moods));
+            renderMoods();
+        }
+
+        function renderMoods() {
+            const ctx = document.getElementById('moodChart').getContext('2d');
+            const recent = moods.slice(-7);
+            if (moodChartInstance) moodChartInstance.destroy();
+            moodChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: recent.map(m => m.date),
+                    datasets: [{
+                        data: recent.map(m => m.value),
+                        borderColor: '#e5e7eb', backgroundColor: '#e5e7eb', borderWidth: 2,
+                        pointBackgroundColor: '#6b7280', pointBorderColor: '#fff', pointRadius: 5, fill: false, tension: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { 
+                        y: { 
+                            min: 1, max: 5, 
+                            ticks: { 
+                                stepSize: 1, 
+                                callback: v => v===5?'🤩':v===4?'🙂':v===3?'😐':v===2?'😢':'😫',
+                                font: { size: 16 }
+                            },
+                            grid: { color: '#f3f4f6' }, border: { display: false }
+                        },
+                        x: { grid: { display: false }, border: { display: false } }
+                    },
+                    plugins: { legend: { display: false } },
+                    layout: { padding: { left: 10 } }
+                }
+            });
+        }
+
+        // --- CICLO MENSTRUAL ---
+        function calculateCycle() {
+            const dateInput = document.getElementById('lastPeriodDate').value;
+            const lengthInput = parseInt(document.getElementById('cycleLength').value) || 28;
+            const phaseDisplay = document.getElementById('cyclePhaseDisplay');
+
+            if (!dateInput) { phaseDisplay.innerText = "Insira as datas acima"; return; }
+
+            localStorage.setItem('isa_v2_lastPeriod', dateInput);
+            localStorage.setItem('isa_v2_cycleLength', lengthInput);
+
+            const startDate = new Date(dateInput);
+            startDate.setMinutes(startDate.getMinutes() + startDate.getTimezoneOffset());
+            startDate.setHours(0,0,0,0);
+            
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            const diffDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) { phaseDisplay.innerText = "Data no futuro"; return; }
+
+            const currentDay = (diffDays % lengthInput) + 1;
+            let phase = "";
+            if (currentDay <= 5) phase = "Menstruação";
+            else if (currentDay <= 13) phase = "Fase Folicular";
+            else if (currentDay <= 16) phase = "Ovulação";
+            else phase = "Fase Lútea";
+
+            phaseDisplay.innerHTML = `<span class="font-bold text-black">Dia ${currentDay}</span> - ${phase}`;
         }
 
         // --- PROVAS E SIMULADOS ---
         function addExam() {
-            const text = document.getElementById('examText').value.trim();
-            const date = document.getElementById('examDate').value;
+            const text = document.getElementById('newExamText').value.trim();
+            const date = document.getElementById('newExamDate').value;
+            if(!text || !date) return alert("Preencha a data e o título!");
             
-            if(!text || !date) return alert("Preencha o nome e a data da prova!");
+            exams.push({ id: Date.now(), text, date, status: 'PENDENTE' });
+            localStorage.setItem('isa_v2_exams', JSON.stringify(exams));
             
-            exams.push({ id: Date.now(), text, date });
-            saveToCloud('isa_exams', exams);
+            document.getElementById('newExamText').value = '';
+            document.getElementById('newExamDate').value = '';
+            closeModal('examModal');
             renderExams();
-            
-            document.getElementById('examText').value = '';
-            document.getElementById('examDate').value = '';
         }
 
         function deleteExam(id) {
             exams = exams.filter(e => e.id !== id);
-            saveToCloud('isa_exams', exams);
+            localStorage.setItem('isa_v2_exams', JSON.stringify(exams));
             renderExams();
         }
 
         function renderExams() {
             const list = document.getElementById('examList');
             list.innerHTML = '';
+            if(exams.length === 0) { list.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-4">Nenhuma prova adicionada.</p>'; return; }
             
-            if(exams.length === 0) {
-                list.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-2">Nenhuma prova agendada.</p>';
-                return;
-            }
-
-            // Ordena por data mais próxima
             exams.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(e => {
-                const dateParts = e.date.split('-'); // YYYY-MM-DD
-                const dateStr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                const [y, m, d] = e.date.split('-');
                 list.innerHTML += `
-                    <li class="flex items-center justify-between p-3 border border-gray-100 rounded-lg bg-white">
-                        <span class="font-medium">${e.text}</span>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">${dateStr}</span>
-                            <button onclick="deleteExam(${e.id})" class="text-gray-400 hover:text-red-500">✕</button>
+                    <div class="border border-gray-200 rounded-lg p-3 flex items-center gap-4 bg-white relative group">
+                        <div class="bg-gray-100 text-gray-700 font-semibold px-3 py-2 rounded text-sm min-w-[50px] text-center">
+                            ${d}/${m}
                         </div>
-                    </li>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-800">${e.text}</p>
+                            <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">${e.status}</p>
+                        </div>
+                        <button onclick="deleteExam(${e.id})" class="absolute right-3 top-3 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">✕</button>
+                    </div>
                 `;
-            });
-        }
-
-        // --- CICLO E GRATIDÃO ---
-        function saveCycle() {
-            localStorage.setItem('isa_cycle', document.getElementById('cyclePhase').value);
-            showSyncStatus();
-        }
-        
-        function saveGratitude() {
-            localStorage.setItem('isa_gratitude', document.getElementById('gratitudeText').value);
-            showSyncStatus();
-        }
-
-        // --- HUMOR ---
-        let moodChartInstance = null;
-
-        function addMood() {
-            const value = parseInt(document.getElementById('moodSelect').value);
-            const date = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); // Ex: 15/10
-            
-            // Verifica se já existe humor para hoje e atualiza, ou adiciona novo
-            const todayIndex = moods.findIndex(m => m.date === date);
-            if(todayIndex !== -1) {
-                moods[todayIndex].value = value;
-            } else {
-                moods.push({ date, value });
-            }
-            
-            saveToCloud('isa_moods', moods);
-            renderMoods();
-        }
-
-        function renderMoods() {
-            const ctx = document.getElementById('moodChart').getContext('2d');
-            
-            // Pega apenas os últimos 14 dias para não poluir o gráfico
-            const recentMoods = moods.slice(-14);
-            const labels = recentMoods.map(m => m.date);
-            const data = recentMoods.map(m => m.value);
-
-            if (moodChartInstance) {
-                moodChartInstance.destroy();
-            }
-
-            moodChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Seu Humor',
-                        data: data,
-                        borderColor: '#000000',
-                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
-                        borderWidth: 2,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#000000',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            min: 1,
-                            max: 5,
-                            ticks: {
-                                stepSize: 1,
-                                callback: function(value) {
-                                    if(value === 5) return '😄';
-                                    if(value === 4) return '🙂';
-                                    if(value === 3) return '😐';
-                                    if(value === 2) return '😔';
-                                    if(value === 1) return '😠';
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
             });
         }
     </script>
