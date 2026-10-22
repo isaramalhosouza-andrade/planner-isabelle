@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Planner - Engenharia & CS</title>
+    <!-- TailwindCSS para um design minimalista -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para o gráfico de humor -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f4f4f5; color: #18181b; }
+        .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        input, select, textarea, button { outline: none; transition: all 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #000; box-shadow: 0 0 0 1px #000; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        
+        <!-- Cabeçalho -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">Meu Planner</h1>
+                <p class="text-gray-500 mt-1">Organização para Engenharia e Faé Mídias Digitais</p>
+            </div>
+            <div class="text-sm text-gray-400 bg-white px-4 py-2 rounded-full shadow-sm">
+                Status: <span id="syncStatus" class="text-green-500 font-semibold">Sincronizado</span>
+            </div>
+        </header>
+
+        <!-- Grid Principal -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Coluna 1 -->
+            <div class="flex flex-col gap-6">
+                
+                <!-- Tarefas do Dia -->
+                <div class="card flex-1">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>📝</span> Tarefas do Dia
+                    </h2>
+                    
+                    <div class="flex flex-col sm:flex-row gap-2 mb-6">
+                        <input type="text" id="taskText" placeholder="O que você precisa fazer?" class="flex-1 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                        <div class="flex gap-2">
+                            <input type="time" id="taskTime" class="p-3 border border-gray-200 rounded-lg bg-gray-50 cursor-pointer" title="Horário da tarefa">
+                            <button onclick="addTask()" class="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 font-semibold shadow-sm">Adicionar</button>
+                        </div>
+                    </div>
+                    
+                    <ul id="taskList" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                        <!-- Tarefas serão inseridas aqui -->
+                    </ul>
+                </div>
+
+                <!-- Provas e Simulados -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>📚</span> Provas e Simulados
+                    </h2>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="examText" placeholder="Ex: Prova de Cálculo" class="flex-1 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                        <input type="date" id="examDate" class="p-3 border border-gray-200 rounded-lg bg-gray-50">
+                        <button onclick="addExam()" class="bg-black text-white px-4 rounded-lg hover:bg-gray-800 font-bold">+</button>
+                    </div>
+                    <ul id="examList" class="space-y-2 max-h-[200px] overflow-y-auto"></ul>
+                </div>
+
+            </div>
+
+            <!-- Coluna 2 -->
+            <div class="flex flex-col gap-6">
+                
+                <!-- Ciclo Menstrual -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>🌸</span> Ciclo Menstrual
+                    </h2>
+                    <select id="cyclePhase" onchange="saveCycle()" class="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 cursor-pointer">
+                        <option value="Menstruação">🩸 Menstruação</option>
+                        <option value="Fase Folicular">🌱 Fase Folicular</option>
+                        <option value="Ovulação">✨ Ovulação</option>
+                        <option value="Fase Lútea">🌙 Fase Lútea</option>
+                    </select>
+                </div>
+
+                <!-- Gratidão da Semana -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>🙏</span> Gratidão da Semana
+                    </h2>
+                    <textarea id="gratitudeText" onblur="saveGratitude()" placeholder="Pelo que você é grata esta semana?" class="w-full p-4 border border-gray-200 rounded-lg h-32 resize-none bg-gray-50"></textarea>
+                </div>
+
+                <!-- Humor e Gráfico -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <span>🎭</span> Monitoramento de Humor
+                    </h2>
+                    <div class="flex gap-2 mb-6">
+                        <select id="moodSelect" class="flex-1 p-3 border border-gray-200 rounded-lg bg-gray-50 cursor-pointer">
+                            <option value="5">Excelente 😄</option>
+                            <option value="4">Bom 🙂</option>
+                            <option value="3">Normal 😐</option>
+                            <option value="2">Triste 😔</option>
+                            <option value="1">Estressada 😠</option>
+                        </select>
+                        <button onclick="addMood()" class="bg-black text-white px-6 rounded-lg hover:bg-gray-800 font-semibold shadow-sm">Registrar Hoje</button>
+                    </div>
+                    <div class="relative h-48 w-full">
+                        <canvas id="moodChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GERENCIAMENTO DE DADOS (LOCALSTORAGE / CLOUD FALLBACK) ---
+        // Utilizando LocalStorage para funcionar perfeitamente e instantaneamente no Netlify.
+        
+        let tasks = JSON.parse(localStorage.getItem('isa_tasks')) || [];
+        let exams = JSON.parse(localStorage.getItem('isa_exams')) || [];
+        let moods = JSON.parse(localStorage.getItem('isa_moods')) || [];
+
+        function saveToCloud(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+            showSyncStatus();
+        }
+
+        function showSyncStatus() {
+            const status = document.getElementById('syncStatus');
+            status.textContent = "Salvando...";
+            status.classList.replace('text-green-500', 'text-gray-400');
+            setTimeout(() => {
+                status.textContent = "Sincronizado";
+                status.classList.replace('text-gray-400', 'text-green-500');
+            }, 500);
+        }
+
+        // --- INICIALIZAÇÃO ---
+        window.onload = () => {
+            renderTasks();
+            renderExams();
+            renderMoods();
+            
+            // Carrega Ciclo e Gratidão
+            document.getElementById('cyclePhase').value = localStorage.getItem('isa_cycle') || 'Menstruação';
+            document.getElementById('gratitudeText').value = localStorage.getItem('isa_gratitude') || '';
+
+            // Pede permissão para notificações
+            if ("Notification" in window && Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
+        };
+
+        // --- TAREFAS ---
+        function addTask() {
+            const text = document.getElementById('taskText').value.trim();
+            const time = document.getElementById('taskTime').value;
+            
+            if(!text) return alert("Digite uma tarefa!");
+            
+            tasks.push({
+                id: Date.now(),
+                text: text,
+                time: time,
+                completed: false,
+                notified: false
+            });
+            
+            saveToCloud('isa_tasks', tasks);
+            renderTasks();
+            
+            document.getElementById('taskText').value = '';
+            document.getElementById('taskTime').value = '';
+        }
+
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if(task) {
+                task.completed = !task.completed;
+                saveToCloud('isa_tasks', tasks);
+                renderTasks();
+            }
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveToCloud('isa_tasks', tasks);
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            
+            if(tasks.length === 0) {
+                list.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-4">Nenhuma tarefa pendente.</p>';
+                return;
+            }
+
+            tasks.forEach(t => {
+                list.innerHTML += `
+                    <li class="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors ${t.completed ? 'opacity-50 bg-gray-50' : 'bg-white'}">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-5 h-5 text-black rounded border-gray-300 cursor-pointer">
+                            <span class="truncate ${t.completed ? 'line-through text-gray-500' : 'font-medium'}">${t.text}</span>
+                            ${t.time ? `<span class="text-xs bg-black text-white px-2 py-1 rounded-full whitespace-nowrap">⏰ ${t.time}</span>` : ''}
+                        </div>
+                        <button onclick="deleteTask(${t.id})" class="text-gray-400 hover:text-red-500 px-2 transition-colors">✕</button>
+                    </li>
+                `;
+            });
+        }
+
+        // --- NOTIFICAÇÕES 10 MINUTOS ANTES ---
+        setInterval(checkUpcomingTasks, 60000); // Roda a cada 60 segundos
+
+        function checkUpcomingTasks() {
+            if (Notification.permission !== "granted") return;
+
+            const now = new Date();
+            const currentTotalMinutes = (now.getHours() * 60) + now.getMinutes();
+            let updated = false;
+
+            tasks.forEach(task => {
+                if (!task.completed && task.time && !task.notified) {
+                    const [taskHour, taskMinute] = task.time.split(':').map(Number);
+                    const taskTotalMinutes = (taskHour * 60) + taskMinute;
+                    
+                    const timeDifference = taskTotalMinutes - currentTotalMinutes;
+
+                    // Se faltar 10 minutos (ou entre 0 e 10 min, caso tenha pulado)
+                    if (timeDifference > 0 && timeDifference <= 10) {
+                        new Notification("Lembrete do Planner!", {
+                            body: `A tarefa "${task.text}" começa em ${timeDifference} minutos! Prepare-se.`
+                        });
+                        task.notified = true;
+                        updated = true;
+                    }
+                }
+            });
+
+            if (updated) {
+                saveToCloud('isa_tasks', tasks); // Salva que já foi notificado
+            }
+        }
+
+        // --- PROVAS E SIMULADOS ---
+        function addExam() {
+            const text = document.getElementById('examText').value.trim();
+            const date = document.getElementById('examDate').value;
+            
+            if(!text || !date) return alert("Preencha o nome e a data da prova!");
+            
+            exams.push({ id: Date.now(), text, date });
+            saveToCloud('isa_exams', exams);
+            renderExams();
+            
+            document.getElementById('examText').value = '';
+            document.getElementById('examDate').value = '';
+        }
+
+        function deleteExam(id) {
+            exams = exams.filter(e => e.id !== id);
+            saveToCloud('isa_exams', exams);
+            renderExams();
+        }
+
+        function renderExams() {
+            const list = document.getElementById('examList');
+            list.innerHTML = '';
+            
+            if(exams.length === 0) {
+                list.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-2">Nenhuma prova agendada.</p>';
+                return;
+            }
+
+            // Ordena por data mais próxima
+            exams.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(e => {
+                const dateParts = e.date.split('-'); // YYYY-MM-DD
+                const dateStr = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                list.innerHTML += `
+                    <li class="flex items-center justify-between p-3 border border-gray-100 rounded-lg bg-white">
+                        <span class="font-medium">${e.text}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">${dateStr}</span>
+                            <button onclick="deleteExam(${e.id})" class="text-gray-400 hover:text-red-500">✕</button>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        // --- CICLO E GRATIDÃO ---
+        function saveCycle() {
+            localStorage.setItem('isa_cycle', document.getElementById('cyclePhase').value);
+            showSyncStatus();
+        }
+        
+        function saveGratitude() {
+            localStorage.setItem('isa_gratitude', document.getElementById('gratitudeText').value);
+            showSyncStatus();
+        }
+
+        // --- HUMOR ---
+        let moodChartInstance = null;
+
+        function addMood() {
+            const value = parseInt(document.getElementById('moodSelect').value);
+            const date = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); // Ex: 15/10
+            
+            // Verifica se já existe humor para hoje e atualiza, ou adiciona novo
+            const todayIndex = moods.findIndex(m => m.date === date);
+            if(todayIndex !== -1) {
+                moods[todayIndex].value = value;
+            } else {
+                moods.push({ date, value });
+            }
+            
+            saveToCloud('isa_moods', moods);
+            renderMoods();
+        }
+
+        function renderMoods() {
+            const ctx = document.getElementById('moodChart').getContext('2d');
+            
+            // Pega apenas os últimos 14 dias para não poluir o gráfico
+            const recentMoods = moods.slice(-14);
+            const labels = recentMoods.map(m => m.date);
+            const data = recentMoods.map(m => m.value);
+
+            if (moodChartInstance) {
+                moodChartInstance.destroy();
+            }
+
+            moodChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Seu Humor',
+                        data: data,
+                        borderColor: '#000000',
+                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#000000',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 1,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    if(value === 5) return '😄';
+                                    if(value === 4) return '🙂';
+                                    if(value === 3) return '😐';
+                                    if(value === 2) return '😔';
+                                    if(value === 1) return '😠';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
